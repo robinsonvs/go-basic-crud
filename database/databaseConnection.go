@@ -8,7 +8,7 @@ import (
 
 func OpenConnection() (*sql.DB, error) {
 
-	connectionString := "golang:golang@/crudgolang?charset=utf8&parseTime=True&loc=Local"
+	connectionString := "root:123456@/crudgolang?charset=utf8&parseTime=True&loc=Local"
 
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
