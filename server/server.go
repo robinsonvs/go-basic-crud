@@ -128,6 +128,50 @@ func FindUser(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(user); err != nil {
 		w.Write([]byte("Failed on convert user to json"))
+		return
 	}
+}
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	ID, err := strconv.ParseUint(params["id"], 10, 32)
+	if err != nil {
+		w.Write([]byte("Fail on convert parameter to Integer"))
+		return
+	}
+
+	requestBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.Write([]byte("Fail on read body"))
+		return
+	}
+
+	var user user
+	if err := json.Unmarshal(requestBody, &user); err != nil {
+		w.Write([]byte("Fail on convert user to struc"))
+		return
+	}
+
+	db, err := database.OpenConnection()
+	if err != nil {
+		w.Write([]byte("Failed on database connect"))
+		return
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("update users set name = ?, mail = ? where id = ?")
+	if err != nil {
+		w.Write([]byte("Fail on statement create"))
+		return
+	}
+	defer statement.Close()
+
+	if _, err := statement.Exec(user.Name, user.Mail, ID); err != nil {
+		w.Write([]byte("Fail on update user"))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }
